@@ -1,0 +1,1948 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<JSim version="2.15">
+  <project name="proj2">
+    <plotpage name="plotpage_1">
+      <control name="desc" value=""/>
+      <control name="confPlot" value="0"/>
+      <control name="nRow" value="1"/>
+      <control name="nCol" value="1"/>
+      <control name="liveUpdate" value="false"/>
+      <control name="showConf" value="true"/>
+      <control name="showXRule" value="false"/>
+      <control name="xRule" value=".5"/>
+      <control name="showYRule" value="false"/>
+      <control name="yRule" value=".5"/>
+      <control name="showMinMaxSliders" value="false"/>
+      <control name="animeDuration" value="10"/>
+      <control name="animeRate" value="10"/>
+      <control name="animeLoop" value="false"/>
+      <control name="animeDir" value="true"/>
+      <plot name="plot0">
+        <control name="nItems" value="2"/>
+        <control name="title" value="[Title]"/>
+        <control name="titleX" value=".5"/>
+        <control name="titleY" value="1"/>
+        <control name="footer" value="%TIME"/>
+        <control name="footerX" value="0"/>
+        <control name="footerY" value="0"/>
+        <control name="showLegend" value="true"/>
+        <control name="showTitle" value="true"/>
+        <control name="showFooter" value="true"/>
+        <control name="legendX" value="1"/>
+        <control name="legendY" value="1"/>
+        <control name="style" value="XY plot"/>
+        <control name="confItem" value="1"/>
+        <control name="confAxis" value="Y"/>
+        <plotaxis name="xaxis">
+          <control name="log" value="linear"/>
+          <control name="autoscale" value="true"/>
+          <control name="label" value="axis label"/>
+          <control name="showLabel" value="true"/>
+          <control name="min" value="0"/>
+          <control name="max" value="1"/>
+        </plotaxis>
+        <plotaxis name="yaxis">
+          <control name="log" value="linear"/>
+          <control name="autoscale" value="true"/>
+          <control name="label" value="axis label"/>
+          <control name="showLabel" value="true"/>
+          <control name="min" value="0"/>
+          <control name="max" value="1"/>
+        </plotaxis>
+        <plotaxis name="zaxis">
+          <control name="log" value="linear"/>
+          <control name="autoscale" value="true"/>
+          <control name="label" value="axis label"/>
+          <control name="showLabel" value="true"/>
+          <control name="min" value="0"/>
+          <control name="max" value="1"/>
+        </plotaxis>
+        <plotitem name="item0">
+          <control name="src" value="FullCircPAH"/>
+          <control name="expr" value="P_pa"/>
+          <control name="color" value="black"/>
+          <control name="size" value="small"/>
+          <control name="shape" value="none"/>
+          <control name="line" value="solid"/>
+          <control name="thickness" value="medium"/>
+          <control name="colorMap" value="none"/>
+          <control name="palette" value="heat"/>
+          <control name="show" value="true"/>
+          <control name="xExpr" value=""/>
+          <control name="yExpr" value=""/>
+        </plotitem>
+        <plotitem name="item1">
+          <control name="src" value="FullCircPAH"/>
+          <control name="expr" value="P_rvw"/>
+          <control name="color" value="red"/>
+          <control name="size" value="small"/>
+          <control name="shape" value="none"/>
+          <control name="line" value="solid"/>
+          <control name="thickness" value="medium"/>
+          <control name="colorMap" value="none"/>
+          <control name="palette" value="heat"/>
+          <control name="show" value="true"/>
+          <control name="xExpr" value=""/>
+          <control name="yExpr" value=""/>
+        </plotitem>
+      </plot>
+    </plotpage>
+    <model name="FullCircPAH">
+      <control name="parSetModified" value="false"/>
+      <control name="desc" value=""/>
+      <control name="easelVariant" value=""/>
+      <control name="notes"></control>
+      <control name="modelSource">import nsrunit;
+	unit conversion on;
+	unit mN = 0.001 N;
+	unit Pa = 1 N/m^2;
+	unit kPa = 1000 Pa;
+
+	math circulation_model{
+
+// -----------------------------------------------------------------------------
+//   PARAMETERS OF    C I R C U L A T I O N   M O D E L
+// -----------------------------------------------------------------------------
+
+	realDomain 	t 	ms;
+	t.min=0; t.max=20000; t.delta=1;
+
+	real			// PARAMETERS
+// GLOBAL PARAMETERS
+
+	rho		= 1060 kg/m^3,	// Density of blood
+
+// Heart rate
+	HR		= 62.4 1/min,	// Heart rate
+
+// Activation, global
+	Atact		= 10 ms,	// Timing of atrial activation within cycle
+	Aup    		= 100 ms,	// Duration of upstroke of atrial activation
+	Aactdur 	= 300 ms,	// Duration of atrial activation
+	Adown    	= 160 ms,	// Duration of downstroke of atrial activation
+
+	PRRRrel	= 0.05 dimensionless, 			// Regression of PR change vs. RR change (Malik 2008)
+
+	LVdelay0	= 149 ms,					// Delay btw. atria and LV at HR 60
+	LVdelay	= LVdelay0 + PRRRrel*(((60 s/min)/HR)-1),       // Delay btw atria and LV with HR dependence
+	LVtact		= Atact + LVdelay,				// Timing of LV activation within cycle
+	LVup		= 213 ms,    					// Duration of upstroke of LV activation
+	LVactdur0 	= 527 ms,					// Duration of LV activation at HR 60
+	LVdownpart     = 0.5 dimensionless,          			// Duration of downstroke of LV activation as fraction of total duration
+	LVactdur	= LVactdur0*(((60 1/min)/HR)^(1/3)),        	// Duration of LV activation, HR dependent (Fridericia 1920)
+	LVdown    	= LVactdur*LVdownpart,			// Duration of downstroke of LV activation
+
+	RVdelay0	= 160 ms,					// Delay btw. atria and RV at HR 60
+	RVdelay	= RVdelay0+ PRRRrel *(((60 s/min)/HR)-1),       // Delay btw atria and LV, HR dependent
+	RVtact		= Atact + RVdelay,				// Timing of RV activation within cycle
+     	RVup		= 210 ms,    					// Duration of upstroke of RV activation
+	RVactdur0 	= 566 ms,					// Duration of RV activation at HR 60
+	RVdownpart    = 0.5,          					// Duration of downstroke of RV activation as fraction of total duration
+	RVactdur	= RVactdur0*(((60 1/min)/HR)^(1/3)),        	// Duration of RV activation, HR dependent (Fridericia 1920)
+	RVdown    	= RVactdur*RVdownpart,			// Duration of downstroke of RV activation
+
+// Vessels
+//   Compliances
+	C_ao		= 	1.09 mL/mmHg,	// Aortic compliance
+	C_vc		= 	40 mL/mmHg,		// Vena cava compliance
+	C_pa		= 	3.99 mL/mmHg,	// Pulmonary artery compliance
+	C_pve		= 	15 mL/mmHg,		// Pulmonary veins compliance
+//   Unstressed volumes
+	V0_ao		= 	0 mL,			// Aorta unstressed volume
+	V0_vc		= 	0 mL,			// Vena cava unstressed volume
+	V0_pa		= 	0 mL,			// Pulmonary artery unstressed volume
+	V0_pve	= 	0 mL,			// Pulmonary veins unstressed volume
+//   Inertances
+	L_ao		= 	0.01 mmHg*s^2*mL^(-1),	// Aorta inertance
+	L_pa		= 	0.01 mmHg*s^2*mL^(-1),	// Pulmonary artery inertance
+	L_vc		=	0.01 mmHg*s^2*mL^(-1),	// Vena cava inertance
+	L_pve		=	0.01 mmHg*s^2*mL^(-1),	// Pulmonary veins inertance
+//   Resistances
+	R_vc		= 	0.001 mmHg*s*mL^(-1),	// Vena cava resistance
+	R_pve		= 	0.001 mmHg*s*mL^(-1),	// Pulmonary veins resistance
+// Vascular resistances
+	SVR		= 	1.18 mmHg*s*mL^(-1),	// Systemic vascular resistance (excl. ao)
+	PVR		= 	0.077 mmHg*s*mL^(-1),	// Pulmonic vascular resistance (excl. pa)
+
+// Valves
+
+//   Valve areas
+	AVAopen		=	3.5 cm^2,		// Aortic valve area (when open)
+	AVAclosed		= 	0.001 cm^2,		// (when closed)
+	MVAopen		= 	4 cm^2,		// Mitral valve area (when open)
+	MVAclosed		= 	0.001 cm^2,		// (when closed)
+	PVAopen		=	3.5 cm^2,		// Pulmonary valve area (when open)
+	PVAclosed		= 	0.001 cm^2,		// (when closed)
+	TVAopen		=	4 cm^2,		// Tricuspid valve area (when open)
+	TVAclosed		= 	0.001 cm^2,		// (when closed)
+
+// Chambers
+//   Inertances
+	L_lvot		= 	0.001 mmHg*s^2*mL^(-1),
+	L_rvot		= 	0.001 mmHg*s^2*mL^(-1),
+	L_la		= 	0.0001 mmHg*s^2*mL^(-1),
+	L_ra		= 	0.0001 mmHg*s^2*mL^(-1),
+
+// LV - active myofiber properties (intercepts of assumed linear force-velocity relationship)
+	LV_smax		= 101.6 kPa,	// Maximal active myofiber stress (at zero velocity)
+	LV_dedtmax		= -3 1/s,	// Maximal myofiber strain rate (at zero afterload)
+
+// LV - passive myofiber properties
+//   For extension above slack length and compression below slack length (assuming symmetric passive properties)
+	LV_k			= 1 kPa,		// Parameters determining shape of compliance curve
+	LV_a			= 16 dimensionless,
+//   Viscosity
+	LV_visc		= 1.5 kPa*s,	// Viscosity (stress per strain rate) 
+						// Ref. Chung 2011.
+						// They find titin-based viscosity approx 5.8 kPa at stretch rate of 1 s-1 (fig. 2)
+						// in mice. A lower value gives more realistic results in this model.
+
+// RV - active myofiber properties
+	RV_smax		= 53.2 kPa,	// Maximal active myofiber stress
+	RV_dedtmax		= -3 1/s,	// Maximal myofiber strain rate
+
+// RV - passive myofiber properties
+//   For extension above slack length and compression below slack length (assuming symmetric passive properties)
+	RV_k			= 1 kPa,	
+	RV_a			= 16 dimensionless,
+//   Viscosity
+	RV_visc			= 1.5 kPa*s,	// viscosity (stress per strain rate)
+
+//  Force-length relation
+	e0			= -0.4 dimensionless,		// Natural fiber strain associated with zero force
+								// force increases above this number (see formula in code)
+
+// LV chamber
+	LV_Vwall		= 101.5 mL,	// Volume of LV wall
+	LV_V0			= 84.4 mL, 	// Unstressed volume of LV cavity
+
+// RV chamber
+	RV_Vwall		= 46 mL,	// Volume of RV wall
+	RV_V0			= 135.6 mL, 	// Unstressed volume of RV cavity 
+
+// LA	
+	V0_la		= 20 mL,		// LA equilibrium volume
+	C_la		= 8 mL/mmHg,	// LA compliance
+	P_maxla	= 6 mmHg,		// Force of atrial contraction
+
+// RA
+	V0_ra		= 20 mL, 		// RA equilibrium volume
+	C_ra		= 8 mL/mmHg,	// RA compliance
+	P_maxra	= 4 mmHg, 		// Force of RA contraction
+
+// Initial conditions
+
+	V_lvinit		= 	LV_V0,			// LV initial volume
+	V_rvinit	= 	RV_V0,			// RV initial volume
+	V_aoinit	= 	100 mL,			// Aorta initial volume
+	V_vcinit	= 	71 mL,				// Vena cava initial volume
+	V_painit	= 	70 mL,			// PA initial volume
+	V_pveinit	= 	195 mL,		// PVe initial volume
+	V_rainit	= 	50 mL,			// RA initial volume
+	V_lainit	= 	85 mL;			// LA initial volume
+
+// Private parameters
+private real
+	LV_lbd_arb0		= (LV_V0+LV_Vwall/3)^(1/3),		// Strain at equilibrium, arbitrarily scaled
+	RV_lbd_arb0		= (RV_V0+RV_Vwall/3)^(1/3);	// Strain at equilibrium, arbitrarily scaled
+
+
+// -----------------------------------------------------------------------------
+//   VARIABLES 
+// -----------------------------------------------------------------------------
+
+// VARIABLES 			
+
+//  Cycle
+private real
+	CycleL		ms,			// Cycle length
+	CycleCt(t)	dimensionless; 		// Cycle count
+real
+	tcycle(t)	ms,			// Time within cycle
+	tcycle2(t)	ms;			// Overlapping time into next cycle
+
+real
+//  Activation
+	Aact(t)		dimensionless,		// Activation function for atria (0-1)
+	LVact(t)	dimensionless,		// Activation function for LV (0-1)
+	RVact(t)	dimensionless,		// Activation function for RV (0-1)
+
+//  Pressures
+	P_lvw(t)	mmHg,			// LV pressure at wall
+	P_lvact(t)	mmHg,			// Active component of LV pressure
+	P_lvela(t)	mmHg,			// Elastic component of LV pressure
+	P_lvvis(t)	mmHg,			// Viscous component of LV pressure
+
+	P_rvw(t)	mmHg,			// RV pressure at wall
+	P_rvact(t)	mmHg,			// Active component of RV pressure
+	P_rvela(t)	mmHg,			// Elastic component of RV pressure
+	P_rvvis(t)	mmHg,			// Viscous component of RV pressure
+
+	P_la(t)		mmHg,			// LA pressure
+	P_ra(t)		mmHg,			// RA pressure
+
+	P_ao(t)		mmHg,			// Aortic pressure
+	P_vc(t)		mmHg,			// Vena cava pressure
+	P_pa(t)		mmHg,			// Pulmonary arterial pressure
+	P_pve(t)	mmHg,			// Pulmonary veins pressure
+
+//  Volumes
+	V_lv(t)		mL,			// LV volume
+	V_rv(t)		mL,			// RV volume
+	V_la(t)		mL,			// LA volume
+	V_ra(t)		mL,			// RA volume
+	V_ao(t)		mL,			// Aortic volume
+	V_vc(t)		mL,			// Vena cava volume
+	V_pa(t)		mL,			// Pulmonary artery volume
+	V_pve(t)	mL,			// Pulmonary veins volume
+
+//  Flows
+	Q_vc(t)		mL/s,			// Flow from vena cava to RA
+	Q_tv(t)		mL/s,			// Flow through tricuspid valve
+	Q_pva(t)	mL/s,			// Flow through pulmonary valve
+	Q_pa(t)		mL/s,			// Flow from PA to pulmonary veins
+	Q_pve(t)	mL/s,			// Flow from pulmonary veins to LA
+	Q_mv(t)	mL/s,			// Flow through mitral valve
+	Q_av(t)		mL/s,			// Flow through aortic valve
+	Q_ao(t)		mL/s,			// Flow from aorta to vena cava
+
+// Valve areas
+	AVA(t)		cm^2,			// Time-dependent aortic valve area
+	MVA(t)		cm^2,			// Time-dependent mitral valve area
+	PVA(t)		cm^2,			// Time-dependent pulmonary valve area
+	TVA(t)		cm^2,			// Time-dependent tricuspid valve area
+
+//  Myofiber variables, LV
+	LV_lbd(t)		dimensionless,		// Myofiber relative length (arbitrarily scaled)
+	LV_e(t)			dimensionless,		// Myofiber natural strain
+	LV_dedt(t)		s^(-1),			// Myofiber strain rate
+	LV_s_act(t)		kPa,			// Myofiber active stress
+	LV_s_ela(t)		kPa,			// Myofiber passive stress from elasticity
+	LV_s_vis(t)		kPa,			// Myofiber passive stress from viscous resistance to motion
+	LV_s(t)			kPa,			// Total myofiber stress
+
+//  Myofiber variables, RV
+	RV_lbd(t)		dimensionless,		// Myofiber relative length
+	RV_e(t)		dimensionless,		// Myofiber natural strain
+	RV_dedt(t)		s^(-1),			// Myofiber strain rate
+	RV_s_act(t)		kPa,			// Myofiber active stress
+	RV_s_ela(t)		kPa,			// Myofiber passive stress from elasticity
+	RV_s_vis(t)		kPa,			// Myofiber passive stress from viscous resistance to motion
+	RV_s(t)		kPa;			// Total myofiber stress
+
+
+//  Valve events
+ private intState
+	AVclosed(t)	dimensionless,		// 1 = AV closed, 0 = AV open
+	MVclosed(t)	dimensionless,
+	PVclosed(t)	dimensionless,
+	TVclosed(t)	dimensionless;
+
+// Stroke work
+  real
+	SP_LV(t)	J/s,			// Stroke power, LV
+	SP_RV(t)	J/s,			// Stroke power, RV
+	SPD_LV(t)	J/s/mL,			// Stroke power density, LV
+	SPD_RV(t)	J/s/mL;			// Stroke power density, RV
+
+
+// -----------------------------------------------------------------------------
+//   INITIAL CONDITIONS 
+// -----------------------------------------------------------------------------
+
+//	Initial Conditions
+
+	  when(t=t.min) {
+	V_ao		= V_aoinit;
+	V_vc		= V_vcinit;
+	V_pa		= V_painit;
+	V_pve		= V_pveinit;
+	V_lv		= V_lvinit;
+	V_rv		= V_rvinit;
+	V_la		= V_lainit;
+	V_ra		= V_rainit;
+
+	Q_tv		= 0;
+	Q_pva		= 0;
+	Q_pa		= 0;
+	Q_vc		= 0;
+	Q_pve		= 0;
+	Q_mv		= 0;
+	Q_av		= 0;
+	Q_ao		= 0;
+
+// State variables
+	AVclosed	= 1;
+	MVclosed	= 0;
+	PVclosed	= 1;
+	TVclosed	= 0;
+	
+	}
+
+// -----------------------------------------------------------------------------
+//   SYSTEM OF EQUATIONS
+// -----------------------------------------------------------------------------
+
+// Ordinary differential equations
+
+	// Valve flows
+		// Tricuspid valve
+	Q_tv:t		=	(P_ra-P_rvw-((Q_tv*abs(Q_tv)/(TVA^2))*rho/2))/L_ra;
+		// Pulmonary valve
+	Q_pva:t	=	(P_rvw-P_pa-((Q_pva*abs(Q_pva)/(PVA^2))*rho/2))/L_rvot;
+		// Mitral valve
+	Q_mv:t		=	(P_la-P_lvw-((Q_mv*abs(Q_mv)/(MVA^2))*rho/2))/L_la;
+		// Aortic valve
+	Q_av:t		=	(P_lvw-P_ao-((Q_av*abs(Q_av)/(AVA^2))*rho/2))/L_lvot;
+
+	// Vessel flows
+		// Vena cava
+	Q_vc:t		= 	(P_vc-P_ra-Q_vc*R_vc)/L_vc;
+		// Pulmonary artery
+	Q_pa:t		=	(P_pa-P_pve-Q_pa*PVR)/L_pa;
+		// Pulmonary veins
+	Q_pve:t	=	(P_pve-P_la-Q_pve*R_pve)/L_pve;
+		// Aorta
+	Q_ao:t		= 	(P_ao-P_vc-Q_ao*SVR)/L_ao;
+
+	// Conservation of mass equations
+
+	V_vc:t		=	Q_ao - Q_vc;
+	V_ra:t		=	Q_vc - Q_tv;
+	V_rv:t		=	Q_tv - Q_pva;
+	V_pa:t		=	Q_pva - Q_pa;
+	V_pve:t		=	Q_pa - Q_pve;
+	V_la:t		=	Q_pve - Q_mv;
+	V_lv:t		= 	Q_mv - Q_av;
+	V_ao:t		=	Q_av - Q_ao;
+
+
+// Cycle variables
+	CycleL		= 1/HR;			// Cycle length
+	CycleCt	= floor((t-t.min)/CycleL);	// Cycle count
+	tcycle		= t-t.min-CycleCt*CycleL;	// Time relative to cycle
+	tcycle2 		= tcycle+CycleL;		// overlapping time into next cycle
+
+// Atria activation function
+	Aact	= if (tcycle&lt;Atact or tcycle&gt;Atact+Aactdur) 0 else
+				 (if (tcycle &lt;= Atact+Aup) (1-cos((tcycle-Atact)*PI/Aup))/2 else
+					(if (tcycle &lt;= Atact+Aactdur-Adown) 1 else					
+						(1+cos((tcycle-(Atact+Aactdur-Adown))/(Adown)*PI))/2)); 
+
+// RV activation
+	RVact	= if (tcycle&lt;RVtact)
+			(if  (tcycle2&gt;RVtact+RVactdur or CycleCt = 0) 0 else
+				 (if (tcycle2 &lt;= RVtact+RVup) (sin((tcycle2-RVtact)*(PI/2)/RVup)) else
+					(if (tcycle2 &lt;= RVtact+RVactdur-RVdown) 1 else					
+						(1+cos((tcycle2-(RVtact+RVactdur-RVdown))/(RVdown)*PI))/2)))
+			else 
+			(if  (tcycle&gt;RVtact+RVactdur) 0 else
+				 (if (tcycle &lt;= RVtact+RVup) (sin((tcycle-RVtact)*(PI/2)/RVup)) else
+					(if (tcycle &lt;= RVtact+RVactdur-RVdown) 1 else					
+						(1+cos((tcycle-(RVtact+RVactdur-RVdown))/(RVdown)*PI))/2))); 
+
+// LV activation
+	LVact	= if (tcycle&lt;LVtact)
+			(if  (tcycle2&gt;LVtact+LVactdur or CycleCt = 0) 0 else
+				 (if (tcycle2 &lt;= LVtact+LVup) (sin((tcycle2-LVtact)*(PI/2)/LVup)) else
+					(if (tcycle2 &lt;= LVtact+LVactdur-LVdown) 1 else					
+						(1+cos((tcycle2-(LVtact+LVactdur-LVdown))/(LVdown)*PI))/2)))
+			else 
+			(if  (tcycle&gt;LVtact+LVactdur) 0 else
+				 (if (tcycle &lt;= LVtact+LVup) (sin((tcycle-LVtact)*(PI/2)/LVup)) else
+					(if (tcycle &lt;= LVtact+LVactdur-LVdown) 1 else					
+						(1+cos((tcycle-(LVtact+LVactdur-LVdown))/(LVdown)*PI))/2))); 
+
+// Valve events
+	// Mitral valve closing
+	event (MVclosed = 0 and Q_mv &lt; 0) { MVclosed = 1; }
+
+	// Aortic valve opening
+	event (AVclosed = 1 and Q_av &gt; 0) { AVclosed = 0; }	
+
+	// Aortic valve closing
+	event (AVclosed = 0 and Q_av &lt; 0) { AVclosed = 1; }
+
+	// Mitral valve opening
+	event (MVclosed = 1 and Q_mv &gt; 0) { MVclosed = 0; }
+
+	// Tricuspid valve closing
+	event (TVclosed = 0 and Q_tv &lt; 0)  { TVclosed = 1; }
+	
+	// Pulmonary valve opening
+	event (PVclosed = 1 and Q_pva &gt; 0) { PVclosed = 0; }
+
+	// Pulmonary valve closing
+	event (PVclosed = 0 and Q_pva &lt; 0) { PVclosed = 1; }
+
+	// Tricuspid valve opening
+	event (TVclosed = 1 and Q_tv &gt; 0) { TVclosed = 0; }
+
+// Change in valve area with state
+	AVA		= if (AVclosed=1) AVAclosed else AVAopen;
+	MVA		= if (MVclosed=1) MVAclosed else MVAopen;
+	PVA		= if (PVclosed=1) PVAclosed else PVAopen;
+	TVA		= if (TVclosed=1) TVAclosed else TVAopen;
+
+
+// Fiber strain
+			// Relation btw fiber strain and cavity + wall volume (Arts 1991)
+	LV_lbd		= (V_lv + LV_Vwall/3)^(1/3)/LV_lbd_arb0; 	// Fiber extension relative to extension at V0 (both arbitrarily scaled)
+	LV_e		= ln(LV_lbd);					// Natural strain
+	LV_dedt	= LV_e:t;					// Strain rate
+	RV_lbd	= (V_rv + RV_Vwall/3)^(1/3)/RV_lbd_arb0;		// - same for RV
+	RV_e		= ln(RV_lbd);
+	RV_dedt	= RV_e:t;
+
+// Fiber stress, active component (applying force-velocity and force-length relation) (de Tombe 1991)
+						// A linear relation btw ratio of developed force vs. max force
+						// and ratio of strain rate vs. max strain rate is assumed.
+						// This seems reasonable for the relationship at physiological loads
+						// (force 15-100% of peak force). A hyperbolic relationship
+						// breaks down above 70% of peak force.
+						// Note that max strain rate for this assumption is different from
+						// and lower than Vmax estimated when using the hyperbolic Hill equation.
+	LV_s_act	= LVact * 
+				(if (LV_dedt&gt;=0) (LV_smax*tanh((LV_e-e0)*3)) else (if (LV_dedt&lt;LV_dedtmax) 0 else
+				(LV_smax-LV_smax*(LV_dedt/LV_dedtmax))*tanh((LV_e-e0)*3)));
+	RV_s_act	= RVact * 
+				(if (RV_dedt&gt;=0) (RV_smax*tanh((RV_e-e0)*3)) else (if (RV_dedt&lt;RV_dedtmax) 0 else
+				(RV_smax-RV_smax*(RV_dedt/RV_dedtmax))*tanh((RV_e-e0)*3)));
+
+// Fiber stress, passive components
+						// Elastic stress modeled to be symmetric on both sides of slack length
+	LV_s_ela	= if (LV_e&gt;=0) (LV_k*(exp(LV_a*LV_e)-1))
+				else -(LV_k*(exp(LV_a*-LV_e)-1));
+						// Viscous force modeled to be proportional to strain rate
+	LV_s_vis	= LV_dedt * LV_visc;
+
+	RV_s_ela	= if (RV_e&gt;=0) (RV_k*(exp(RV_a*RV_e)-1))
+				else -(RV_k*(exp(RV_a*-RV_e)-1));
+
+	RV_s_vis	= RV_dedt * RV_visc;
+
+// Fiber stress, total (sum of active and passive components)
+	LV_s		= LV_s_act + LV_s_ela + LV_s_vis;
+	RV_s		= RV_s_act + RV_s_ela + RV_s_vis;
+
+// LV pressure at wall
+			// Relation btw. fiber stress and intracavitary pressure (Arts 1991)
+	P_lvw	 	= LV_s/(1+3*V_lv/LV_Vwall);
+	P_lvact		= LV_s_act/(1+3*V_lv/LV_Vwall);   // Active component of intracavitary pressure
+	P_lvela		= LV_s_ela/(1+3*V_lv/LV_Vwall);   // Elastic component
+	P_lvvis		= LV_s_vis/(1+3*V_lv/LV_Vwall);   // Viscous component
+
+// RV pressure at wall
+	P_rvw		= RV_s/(1+3*V_rv/RV_Vwall);
+	P_rvact		= RV_s_act/(1+3*V_rv/RV_Vwall);
+	P_rvela		= RV_s_ela/(1+3*V_rv/RV_Vwall);
+	P_rvvis		= RV_s_vis/(1+3*V_rv/RV_Vwall);
+
+// Atrial pressures
+			// Passive component + active component
+			// Linear compliance curve
+	P_la		= (V_la-V0_la)/C_la + Aact*P_maxla;
+	P_ra		= (V_ra-V0_ra)/C_ra + Aact*P_maxra;
+
+// Vessels pressures
+
+	P_ao		= (V_ao-V0_ao)/C_ao ;	
+	P_vc		= (V_vc-V0_vc)/C_vc ;
+	P_pa		= (V_pa-V0_pa)/C_pa;
+	P_pve		= (V_pve-V0_pve)/C_pve;
+
+// Stroke power
+	SP_LV		= -P_lvact*(V_lv:t);
+	SP_RV		= -P_rvact*(V_rv:t);
+// Stroke power density
+	SPD_LV	= -LV_s_act*LV_dedt;
+	SPD_RV	= -RV_s_act*RV_dedt;
+
+} // END OF MML CODE
+
+/*
+
+References:
+
+Arts, T., Bovendeerd, P.H., Prinzen, F.W., and Reneman, R.S. (1991). 
+Relation between left ventricular cavity pressure and volume and systolic fiber stress and strain in the wall. 
+Biophys. J. 59, 93–102.
+
+Chung, C.S., Methawasin, M., Nelson, O.L., Radke, M.H., Hidalgo, C.G., Gotthardt, M., and Granzier, H.L. (2011). 
+Titin based viscosity in ventricular physiology: An integrative investigation of PEVK–actin interactions. 
+J. Mol. Cell. Cardiol. 51, 428–434.
+
+Fridericia, L.S. (1920). 
+Die Systolendauer im Elektrokardiogramm bei normalen Menschen und bei Herzkranken. 
+Acta Med. Scand. 53, 469–486.
+
+Tombe, P.P. de, and Keurs, H.E. ter (1991). 
+Sarcomere dynamics in cat cardiac trabeculae. 
+Circ. Res. 68, 588–596.
+
+
+Original author of model: Niels Thue Olsen June 2018.
+
+Publication: 
+
+Developed for the JSim software platform:
+  Copyright (C) 1999-2009 University of Washington. From the National Simulation Resource,  
+  Director J. B. Bassingthwaighte, Department of Bioengineering, University of Washington, Seattle WA 98195-5061. 
+  Academic use is unrestricted. Software may be copied so long as this copyright notice is included.
+  
+  This software was developed with support from NIH grant HL073598. 
+  Please cite this grant in any publication for which this software is used and send one reprint 
+  to the address given above. 
+
+*/
+
+</control>
+      <control name="sourceType" value="mml"/>
+      <control name="parSetName" value="PAH_patient_exercise"/>
+      <control name="built" value="true"/>
+      <control name="customRTML"></control>
+      <control name="customBuilt" value="false"/>
+      <options name="buildOptions">
+        <control name="maxBuildTime" value="120"/>
+        <control name="maxImplicitBlock" value="10"/>
+        <control name="initNaN" value="false"/>
+        <control name="abortNaN" value="false"/>
+        <control name="traceNaN" value="false"/>
+        <control name="traceVars" value=""/>
+        <control name="ignoreAllOverspec" value="false"/>
+        <control name="ignoreAllUnderspec" value="false"/>
+        <control name="splitBlocks" value="false"/>
+        <control name="parallelize" value="false"/>
+      </options>
+      <vars name="vars"/>
+      <parset name="last">
+        <pargroups>
+          <pargroup name="inputs">
+            <control name="t.min" value="0"/>
+            <control name="t.max" value="20000"/>
+            <control name="t.delta" value="1"/>
+            <control name="rho" value="1060"/>
+            <control name="HR" value="107.3"/>
+            <control name="Atact" value="10"/>
+            <control name="Aup" value="100"/>
+            <control name="Aactdur" value="300"/>
+            <control name="Adown" value="160"/>
+            <control name="PRRRrel" value=".05"/>
+            <control name="LVdelay0" value="200.89"/>
+            <control name="LVup" value="134.5"/>
+            <control name="LVactdur0" value="499.94"/>
+            <control name="LVdownpart" value=".5"/>
+            <control name="RVdelay0" value="208"/>
+            <control name="RVup" value="103.63"/>
+            <control name="RVactdur0" value="568.74"/>
+            <control name="RVdownpart" value=".5"/>
+            <control name="C_ao" value=".9269"/>
+            <control name="C_vc" value="20"/>
+            <control name="C_pa" value=".9541"/>
+            <control name="C_pve" value="15"/>
+            <control name="V0_ao" value="0"/>
+            <control name="V0_vc" value="0"/>
+            <control name="V0_pa" value="0"/>
+            <control name="V0_pve" value="0"/>
+            <control name="L_ao" value=".01"/>
+            <control name="L_pa" value=".01"/>
+            <control name="L_vc" value=".01"/>
+            <control name="L_pve" value=".01"/>
+            <control name="R_vc" value=".001"/>
+            <control name="R_pve" value=".001"/>
+            <control name="SVR" value="0.959357"/>
+            <control name="PVR" value="0.6516"/>
+            <control name="AVAopen" value="3.5"/>
+            <control name="AVAclosed" value=".001"/>
+            <control name="MVAopen" value="4"/>
+            <control name="MVAclosed" value=".001"/>
+            <control name="PVAopen" value="3.5"/>
+            <control name="PVAclosed" value=".001"/>
+            <control name="TVAopen" value="4"/>
+            <control name="TVAclosed" value=".001"/>
+            <control name="L_lvot" value=".001"/>
+            <control name="L_rvot" value=".001"/>
+            <control name="L_la" value="1E-4"/>
+            <control name="L_ra" value="1E-4"/>
+            <control name="LV_smax" value="105.38"/>
+            <control name="LV_dedtmax" value="-4.5"/>
+            <control name="LV_k" value="1"/>
+            <control name="LV_a" value="16"/>
+            <control name="LV_visc" value="1.5"/>
+            <control name="RV_smax" value="155.94"/>
+            <control name="RV_dedtmax" value="-4.5"/>
+            <control name="RV_k" value="1"/>
+            <control name="RV_a" value="16"/>
+            <control name="RV_visc" value="1.5"/>
+            <control name="e0" value="-0.4"/>
+            <control name="LV_Vwall" value="99.47"/>
+            <control name="LV_V0" value="63.79"/>
+            <control name="RV_Vwall" value="72.97"/>
+            <control name="RV_V0" value="129.77"/>
+            <control name="V0_la" value="20"/>
+            <control name="C_la" value="8"/>
+            <control name="P_maxla" value="9"/>
+            <control name="V0_ra" value="20"/>
+            <control name="C_ra" value="8"/>
+            <control name="P_maxra" value="6"/>
+            <control name="V_aoinit" value="104.29"/>
+            <control name="V_vcinit" value="468.5"/>
+            <control name="V_painit" value="74.29"/>
+            <control name="V_pveinit" value="178.57"/>
+            <control name="V_rainit" value="111.43"/>
+            <control name="V_lainit" value="97.14"/>
+            <control name="Q_tv__init" value="0"/>
+            <control name="Q_pva__init" value="0"/>
+            <control name="Q_pa__init" value="0"/>
+            <control name="Q_vc__init" value="0"/>
+            <control name="Q_pve__init" value="0"/>
+            <control name="Q_mv__init" value="0"/>
+            <control name="Q_av__init" value="0"/>
+            <control name="Q_ao__init" value="0"/>
+          </pargroup>
+          <pargroup name="solver">
+            <control name="ode_which" value="Auto"/>
+            <control name="ode_Dopri5_reltol" value="1E-7"/>
+            <control name="ode_Dopri5_abstol" value="1E-7"/>
+            <control name="ode_Dopri5_nstep" value="100000"/>
+            <control name="ode_Dopri5_stiff" value="1000"/>
+            <control name="ode_Dopri5_round" value="2.3E-16"/>
+            <control name="ode_Dopri5_safety" value=".9"/>
+            <control name="ode_Dopri5_loselect" value=".2"/>
+            <control name="ode_Dopri5_hiselect" value="10"/>
+            <control name="ode_Dopri5_beta" value=".04"/>
+            <control name="ode_Euler_nstep" value="2"/>
+            <control name="ode_RK2_nstep" value="2"/>
+            <control name="ode_Fehlberg_minstep" value="1E-4"/>
+            <control name="ode_Fehlberg_maxstep" value=".1"/>
+            <control name="ode_Fehlberg_tol" value="1E-6"/>
+            <control name="ode_KM_minstep" value="1E-4"/>
+            <control name="ode_KM_maxstep" value=".1"/>
+            <control name="ode_KM_tol" value="1E-6"/>
+            <control name="ode_Radau_reltol" value="1E-4"/>
+            <control name="ode_Radau_abstol" value="1E-7"/>
+            <control name="ode_Radau_nstep" value="100000"/>
+            <control name="ode_Radau_round" value="1E-16"/>
+            <control name="ode_Radau_safety" value=".9"/>
+            <control name="ode_Radau_minord" value="3"/>
+            <control name="ode_Radau_maxord" value="7"/>
+            <control name="ode_Radau_initord" value="3"/>
+            <control name="ode_Radau_newton" value="7"/>
+            <control name="ode_Radau_jacob" value=".001"/>
+            <control name="ode_Radau_losize" value="1"/>
+            <control name="ode_Radau_hisize" value="1.2"/>
+            <control name="ode_Radau_loselect" value=".2"/>
+            <control name="ode_Radau_hiselect" value="8"/>
+            <control name="ode_Radau_locontract" value=".002"/>
+            <control name="ode_Radau_hicontract" value=".8"/>
+            <control name="ode_Radau_hiorder" value="1.2"/>
+            <control name="ode_Radau_loorder" value=".8"/>
+            <control name="ode_RK4_nstep" value="2"/>
+            <control name="ode_CVode_reltol" value="1E-7"/>
+            <control name="ode_CVode_abstol" value="1E-8"/>
+            <control name="ode_CVode_maxsteps" value="100000"/>
+            <control name="ode_CVode_stiff" value="false"/>
+            <control name="pde_which" value="LSFEA"/>
+            <control name="pde_MacCormack_FCT" value="false"/>
+            <control name="fzero_unbound" value="ggopt"/>
+            <control name="fzero_bound" value="simplex"/>
+            <control name="fzero_errtol" value="1E-6"/>
+            <control name="fzero_maxcalls" value="500"/>
+            <control name="fzero_maxiters" value="100"/>
+            <control name="fzero_eps" value="1E-6"/>
+            <control name="fzero_istep" value=".01"/>
+            <control name="fzero_npoints" value="5"/>
+            <control name="fzero_randseed" value="0"/>
+            <control name="fzero_inittemp" value="100"/>
+            <control name="fzero_populationsize" value="50"/>
+            <control name="fzero_mutationrate" value=".1"/>
+            <control name="fzero_crossoverrate" value=".5"/>
+            <control name="fzero_mutationstep" value=".05"/>
+            <control name="fzero_elitecutoff" value=".5"/>
+            <control name="fzero_selectmethod" value="1"/>
+            <control name="random_seed" value="0"/>
+          </pargroup>
+          <pargroup name="memory">
+            <control name="storeGrids" value="all"/>
+            <control name="t.nth" value="1"/>
+          </pargroup>
+        </pargroups>
+        <vars name="vars">
+          <assign name="vars">
+            <control name="t.min" value="0"/>
+            <control name="t.max" value="20000"/>
+            <control name="t.delta" value="1"/>
+            <control name="rho" value="1060"/>
+            <control name="HR" value="107.3"/>
+            <control name="Atact" value="10"/>
+            <control name="Aup" value="100"/>
+            <control name="Aactdur" value="300"/>
+            <control name="Adown" value="160"/>
+            <control name="PRRRrel" value=".05"/>
+            <control name="LVdelay0" value="200.89"/>
+            <control name="LVup" value="134.5"/>
+            <control name="LVactdur0" value="499.94"/>
+            <control name="LVdownpart" value=".5"/>
+            <control name="RVdelay0" value="208"/>
+            <control name="RVup" value="103.63"/>
+            <control name="RVactdur0" value="568.74"/>
+            <control name="RVdownpart" value=".5"/>
+            <control name="C_ao" value=".9269"/>
+            <control name="C_vc" value="20"/>
+            <control name="C_pa" value=".9541"/>
+            <control name="C_pve" value="15"/>
+            <control name="V0_ao" value="0"/>
+            <control name="V0_vc" value="0"/>
+            <control name="V0_pa" value="0"/>
+            <control name="V0_pve" value="0"/>
+            <control name="L_ao" value=".01"/>
+            <control name="L_pa" value=".01"/>
+            <control name="L_vc" value=".01"/>
+            <control name="L_pve" value=".01"/>
+            <control name="R_vc" value=".001"/>
+            <control name="R_pve" value=".001"/>
+            <control name="SVR" value="0.959357"/>
+            <control name="PVR" value="0.6516"/>
+            <control name="AVAopen" value="3.5"/>
+            <control name="AVAclosed" value=".001"/>
+            <control name="MVAopen" value="4"/>
+            <control name="MVAclosed" value=".001"/>
+            <control name="PVAopen" value="3.5"/>
+            <control name="PVAclosed" value=".001"/>
+            <control name="TVAopen" value="4"/>
+            <control name="TVAclosed" value=".001"/>
+            <control name="L_lvot" value=".001"/>
+            <control name="L_rvot" value=".001"/>
+            <control name="L_la" value="1E-4"/>
+            <control name="L_ra" value="1E-4"/>
+            <control name="LV_smax" value="105.38"/>
+            <control name="LV_dedtmax" value="-4.5"/>
+            <control name="LV_k" value="1"/>
+            <control name="LV_a" value="16"/>
+            <control name="LV_visc" value="1.5"/>
+            <control name="RV_smax" value="155.94"/>
+            <control name="RV_dedtmax" value="-4.5"/>
+            <control name="RV_k" value="1"/>
+            <control name="RV_a" value="16"/>
+            <control name="RV_visc" value="1.5"/>
+            <control name="e0" value="-0.4"/>
+            <control name="LV_Vwall" value="99.47"/>
+            <control name="LV_V0" value="63.79"/>
+            <control name="RV_Vwall" value="72.97"/>
+            <control name="RV_V0" value="129.77"/>
+            <control name="V0_la" value="20"/>
+            <control name="C_la" value="8"/>
+            <control name="P_maxla" value="9"/>
+            <control name="V0_ra" value="20"/>
+            <control name="C_ra" value="8"/>
+            <control name="P_maxra" value="6"/>
+            <control name="V_aoinit" value="104.29"/>
+            <control name="V_vcinit" value="468.5"/>
+            <control name="V_painit" value="74.29"/>
+            <control name="V_pveinit" value="178.57"/>
+            <control name="V_rainit" value="111.43"/>
+            <control name="V_lainit" value="97.14"/>
+            <control name="Q_tv__init" value="0"/>
+            <control name="Q_pva__init" value="0"/>
+            <control name="Q_pa__init" value="0"/>
+            <control name="Q_vc__init" value="0"/>
+            <control name="Q_pve__init" value="0"/>
+            <control name="Q_mv__init" value="0"/>
+            <control name="Q_av__init" value="0"/>
+            <control name="Q_ao__init" value="0"/>
+          </assign>
+          <solver name="solver">
+            <control name="ode_which" value="Auto"/>
+            <control name="ode_Dopri5_reltol" value="1E-7"/>
+            <control name="ode_Dopri5_abstol" value="1E-7"/>
+            <control name="ode_Dopri5_nstep" value="100000"/>
+            <control name="ode_Dopri5_stiff" value="1000"/>
+            <control name="ode_Dopri5_round" value="2.3E-16"/>
+            <control name="ode_Dopri5_safety" value=".9"/>
+            <control name="ode_Dopri5_loselect" value=".2"/>
+            <control name="ode_Dopri5_hiselect" value="10"/>
+            <control name="ode_Dopri5_beta" value=".04"/>
+            <control name="ode_Euler_nstep" value="2"/>
+            <control name="ode_RK2_nstep" value="2"/>
+            <control name="ode_Fehlberg_minstep" value="1E-4"/>
+            <control name="ode_Fehlberg_maxstep" value=".1"/>
+            <control name="ode_Fehlberg_tol" value="1E-6"/>
+            <control name="ode_KM_minstep" value="1E-4"/>
+            <control name="ode_KM_maxstep" value=".1"/>
+            <control name="ode_KM_tol" value="1E-6"/>
+            <control name="ode_Radau_reltol" value="1E-4"/>
+            <control name="ode_Radau_abstol" value="1E-7"/>
+            <control name="ode_Radau_nstep" value="100000"/>
+            <control name="ode_Radau_round" value="1E-16"/>
+            <control name="ode_Radau_safety" value=".9"/>
+            <control name="ode_Radau_minord" value="3"/>
+            <control name="ode_Radau_maxord" value="7"/>
+            <control name="ode_Radau_initord" value="3"/>
+            <control name="ode_Radau_newton" value="7"/>
+            <control name="ode_Radau_jacob" value=".001"/>
+            <control name="ode_Radau_losize" value="1"/>
+            <control name="ode_Radau_hisize" value="1.2"/>
+            <control name="ode_Radau_loselect" value=".2"/>
+            <control name="ode_Radau_hiselect" value="8"/>
+            <control name="ode_Radau_locontract" value=".002"/>
+            <control name="ode_Radau_hicontract" value=".8"/>
+            <control name="ode_Radau_hiorder" value="1.2"/>
+            <control name="ode_Radau_loorder" value=".8"/>
+            <control name="ode_RK4_nstep" value="2"/>
+            <control name="ode_CVode_reltol" value="1E-7"/>
+            <control name="ode_CVode_abstol" value="1E-8"/>
+            <control name="ode_CVode_maxsteps" value="100000"/>
+            <control name="ode_CVode_stiff" value="false"/>
+            <control name="pde_which" value="LSFEA"/>
+            <control name="pde_MacCormack_FCT" value="false"/>
+            <control name="fzero_unbound" value="ggopt"/>
+            <control name="fzero_bound" value="simplex"/>
+            <control name="fzero_errtol" value="1E-6"/>
+            <control name="fzero_maxcalls" value="500"/>
+            <control name="fzero_maxiters" value="100"/>
+            <control name="fzero_eps" value="1E-6"/>
+            <control name="fzero_istep" value=".01"/>
+            <control name="fzero_npoints" value="5"/>
+            <control name="fzero_randseed" value="0"/>
+            <control name="fzero_inittemp" value="100"/>
+            <control name="fzero_populationsize" value="50"/>
+            <control name="fzero_mutationrate" value=".1"/>
+            <control name="fzero_crossoverrate" value=".5"/>
+            <control name="fzero_mutationstep" value=".05"/>
+            <control name="fzero_elitecutoff" value=".5"/>
+            <control name="fzero_selectmethod" value="1"/>
+            <control name="random_seed" value="0"/>
+          </solver>
+        </vars>
+        <control name="desc" value=""/>
+        <control name="locked" value="false"/>
+        <control name="notes"></control>
+      </parset>
+      <imageset name="images"/>
+      <loops name="loops">
+        <loop name="outer">
+          <control name="mode" value="auto"/>
+          <control name="ntimes" value="3"/>
+          <control name="npars" value="1"/>
+          <looppar name="looppar0">
+            <control name="par" value=""/>
+            <control name="values" value=""/>
+            <control name="enabled" value="true"/>
+          </looppar>
+        </loop>
+        <loop name="inner">
+          <control name="mode" value="auto"/>
+          <control name="ntimes" value="3"/>
+          <control name="npars" value="1"/>
+          <looppar name="looppar0">
+            <control name="par" value=""/>
+            <control name="values" value=""/>
+            <control name="enabled" value="true"/>
+          </looppar>
+        </loop>
+      </loops>
+      <sens name="sens">
+        <control name="npars" value="1"/>
+        <senspar name="senspar0">
+          <control name="par" value=""/>
+          <control name="delta" value=".01"/>
+          <control name="enabled" value="true"/>
+        </senspar>
+      </sens>
+      <optim name="optim">
+        <control name="npars" value="1"/>
+        <control name="nmatches" value="1"/>
+        <control name="alg" value="simplex"/>
+        <control name="maxCalls" value="50"/>
+        <control name="maxIters" value="10"/>
+        <control name="errTol" value=".001"/>
+        <control name="stepTol" value="1E-6"/>
+        <control name="gradTol" value="1E-6"/>
+        <control name="npoints" value="5"/>
+        <control name="eps" value="1E-6"/>
+        <control name="randomSeed" value="0"/>
+        <control name="initTemp" value="100"/>
+        <control name="populationSize" value="25"/>
+        <control name="mutationRate" value=".1"/>
+        <control name="crossoverRate" value=".5"/>
+        <control name="mutationStep" value=".05"/>
+        <control name="selectMethod" value="roulette"/>
+        <control name="eliteCutoff" value=".5"/>
+        <control name="calcCovMat" value="true"/>
+        <control name="reportPrec" value="4"/>
+        <optgraph name="pars">
+          <control name="log" value="linear"/>
+        </optgraph>
+        <optgraph name="normPars">
+          <control name="log" value="linear"/>
+        </optgraph>
+        <optgraph name="rmsError">
+          <control name="log" value="linear"/>
+        </optgraph>
+        <optgraph name="dataToMatch">
+          <control name="log" value="linear"/>
+        </optgraph>
+        <optgraph name="unwgtResid">
+          <control name="log" value="linear"/>
+        </optgraph>
+        <optgraph name="wgtResid">
+          <control name="log" value="linear"/>
+        </optgraph>
+        <optgraph name="pointWgts">
+          <control name="log" value="linear"/>
+        </optgraph>
+        <optpar name="optpar0">
+          <control name="par" value=""/>
+          <control name="min" value="NaN"/>
+          <control name="max" value="NaN"/>
+          <control name="step" value=".01"/>
+          <control name="enabled" value="true"/>
+        </optpar>
+        <optmatch name="optmatch0">
+          <control name="src" value=""/>
+          <control name="data" value=""/>
+          <control name="expr" value=""/>
+          <control name="pointWgts" value="1"/>
+          <control name="step" value="1"/>
+          <control name="enabled" value="true"/>
+        </optmatch>
+      </optim>
+      <montecarlo name="montecarlo">
+        <control name="noptims" value="50"/>
+        <control name="randomSeed" value="0"/>
+        <control name="dist" value="gaussian"/>
+        <control name="magnitude" value=".1"/>
+        <control name="addMethod" value="proportional"/>
+        <control name="graphView" value="histogram"/>
+        <control name="graphPar1" value=""/>
+        <control name="graphPar2" value=""/>
+        <control name="graphOptNo" value="1"/>
+        <control name="graphLog" value="false"/>
+        <control name="graphBins" value="10"/>
+      </montecarlo>
+      <browser name="browser">
+        <control name="which" value="variables"/>
+        <control name="varCollapse" value="true"/>
+        <control name="varNodeTextColor" value="disabled"/>
+        <control name="varNodeFillColor" value="unitType"/>
+        <control name="varNodeBorderColor" value="toolType"/>
+        <control name="varNodeShape" value="isInput"/>
+        <control name="seqNodeTextColor" value="disabled"/>
+        <control name="seqNodeFillColor" value="itemType"/>
+        <control name="seqNodeBorderColor" value="phase"/>
+        <control name="seqNodeShape" value="hasDeT"/>
+        <layout name="layout"/>
+      </browser>
+      <rtml name="rtml"/>
+    </model>
+    <parset name="Normal_subject">
+      <pargroups>
+        <pargroup name="inputs">
+          <control name="t.min" value="0"/>
+          <control name="t.max" value="2E4"/>
+          <control name="t.delta" value="1"/>
+          <control name="rho" value="1060"/>
+          <control name="HR" value="62.4"/>
+          <control name="Atact" value="10"/>
+          <control name="Aup" value="100"/>
+          <control name="Aactdur" value="300"/>
+          <control name="Adown" value="160"/>
+          <control name="PRRRrel" value=".05"/>
+          <control name="LVdelay0" value="149"/>
+          <control name="LVup" value="213"/>
+          <control name="LVactdur0" value="527"/>
+          <control name="LVdownpart" value=".5"/>
+          <control name="RVdelay0" value="160"/>
+          <control name="RVup" value="210"/>
+          <control name="RVactdur0" value="566"/>
+          <control name="RVdownpart" value=".5"/>
+          <control name="C_ao" value="1.09"/>
+          <control name="C_vc" value="40"/>
+          <control name="C_pa" value="3.99"/>
+          <control name="C_pve" value="15"/>
+          <control name="V0_ao" value="0"/>
+          <control name="V0_vc" value="0"/>
+          <control name="V0_pa" value="0"/>
+          <control name="V0_pve" value="0"/>
+          <control name="L_ao" value=".01"/>
+          <control name="L_pa" value=".01"/>
+          <control name="L_vc" value=".01"/>
+          <control name="L_pve" value=".01"/>
+          <control name="R_vc" value=".001"/>
+          <control name="R_pve" value=".001"/>
+          <control name="SVR" value="1.18"/>
+          <control name="PVR" value=".077"/>
+          <control name="AVAopen" value="3.5"/>
+          <control name="AVAclosed" value=".001"/>
+          <control name="MVAopen" value="4"/>
+          <control name="MVAclosed" value=".001"/>
+          <control name="PVAopen" value="3.5"/>
+          <control name="PVAclosed" value=".001"/>
+          <control name="TVAopen" value="4"/>
+          <control name="TVAclosed" value=".001"/>
+          <control name="L_lvot" value=".001"/>
+          <control name="L_rvot" value=".001"/>
+          <control name="L_la" value="1E-4"/>
+          <control name="L_ra" value="1E-4"/>
+          <control name="LV_smax" value="101.6"/>
+          <control name="LV_dedtmax" value="-3"/>
+          <control name="LV_k" value="1"/>
+          <control name="LV_a" value="16"/>
+          <control name="LV_visc" value="1.5"/>
+          <control name="RV_smax" value="53.2"/>
+          <control name="RV_dedtmax" value="-3"/>
+          <control name="RV_k" value="1"/>
+          <control name="RV_a" value="16"/>
+          <control name="RV_visc" value="1.5"/>
+          <control name="e0" value="-0.4"/>
+          <control name="LV_Vwall" value="101.5"/>
+          <control name="LV_V0" value="84.4"/>
+          <control name="RV_Vwall" value="46"/>
+          <control name="RV_V0" value="135.6"/>
+          <control name="V0_la" value="20"/>
+          <control name="C_la" value="8"/>
+          <control name="P_maxla" value="6"/>
+          <control name="V0_ra" value="20"/>
+          <control name="C_ra" value="8"/>
+          <control name="P_maxra" value="4"/>
+          <control name="V_aoinit" value="100"/>
+          <control name="V_vcinit" value="71"/>
+          <control name="V_painit" value="70"/>
+          <control name="V_pveinit" value="195"/>
+          <control name="V_rainit" value="50"/>
+          <control name="V_lainit" value="85"/>
+          <control name="Q_tv__init" value="0"/>
+          <control name="Q_pva__init" value="0"/>
+          <control name="Q_pa__init" value="0"/>
+          <control name="Q_vc__init" value="0"/>
+          <control name="Q_pve__init" value="0"/>
+          <control name="Q_mv__init" value="0"/>
+          <control name="Q_av__init" value="0"/>
+          <control name="Q_ao__init" value="0"/>
+        </pargroup>
+        <pargroup name="solver">
+          <control name="ode_which" value="Auto"/>
+          <control name="ode_Dopri5_reltol" value="1E-7"/>
+          <control name="ode_Dopri5_abstol" value="1E-7"/>
+          <control name="ode_Dopri5_nstep" value="100000"/>
+          <control name="ode_Dopri5_stiff" value="1000"/>
+          <control name="ode_Dopri5_round" value="2.3E-16"/>
+          <control name="ode_Dopri5_safety" value=".9"/>
+          <control name="ode_Dopri5_loselect" value=".2"/>
+          <control name="ode_Dopri5_hiselect" value="10"/>
+          <control name="ode_Dopri5_beta" value=".04"/>
+          <control name="ode_Euler_nstep" value="2"/>
+          <control name="ode_RK2_nstep" value="2"/>
+          <control name="ode_Fehlberg_minstep" value="1E-4"/>
+          <control name="ode_Fehlberg_maxstep" value=".1"/>
+          <control name="ode_Fehlberg_tol" value="1E-6"/>
+          <control name="ode_KM_minstep" value="1E-4"/>
+          <control name="ode_KM_maxstep" value=".1"/>
+          <control name="ode_KM_tol" value="1E-6"/>
+          <control name="ode_Radau_reltol" value="1E-4"/>
+          <control name="ode_Radau_abstol" value="1E-7"/>
+          <control name="ode_Radau_nstep" value="100000"/>
+          <control name="ode_Radau_round" value="1E-16"/>
+          <control name="ode_Radau_safety" value=".9"/>
+          <control name="ode_Radau_minord" value="3"/>
+          <control name="ode_Radau_maxord" value="7"/>
+          <control name="ode_Radau_initord" value="3"/>
+          <control name="ode_Radau_newton" value="7"/>
+          <control name="ode_Radau_jacob" value=".001"/>
+          <control name="ode_Radau_losize" value="1"/>
+          <control name="ode_Radau_hisize" value="1.2"/>
+          <control name="ode_Radau_loselect" value=".2"/>
+          <control name="ode_Radau_hiselect" value="8"/>
+          <control name="ode_Radau_locontract" value=".002"/>
+          <control name="ode_Radau_hicontract" value=".8"/>
+          <control name="ode_Radau_hiorder" value="1.2"/>
+          <control name="ode_Radau_loorder" value=".8"/>
+          <control name="ode_RK4_nstep" value="2"/>
+          <control name="ode_CVode_reltol" value="1E-7"/>
+          <control name="ode_CVode_abstol" value="1E-8"/>
+          <control name="ode_CVode_maxsteps" value="100000"/>
+          <control name="ode_CVode_stiff" value="false"/>
+          <control name="pde_which" value="LSFEA"/>
+          <control name="pde_MacCormack_FCT" value="false"/>
+          <control name="fzero_unbound" value="ggopt"/>
+          <control name="fzero_bound" value="simplex"/>
+          <control name="fzero_errtol" value="1E-6"/>
+          <control name="fzero_maxcalls" value="500"/>
+          <control name="fzero_maxiters" value="100"/>
+          <control name="fzero_eps" value="1E-6"/>
+          <control name="fzero_istep" value=".01"/>
+          <control name="fzero_npoints" value="5"/>
+          <control name="fzero_randseed" value="0"/>
+          <control name="fzero_inittemp" value="100"/>
+          <control name="fzero_populationsize" value="50"/>
+          <control name="fzero_mutationrate" value=".1"/>
+          <control name="fzero_crossoverrate" value=".5"/>
+          <control name="fzero_mutationstep" value=".05"/>
+          <control name="fzero_elitecutoff" value=".5"/>
+          <control name="fzero_selectmethod" value="1"/>
+          <control name="random_seed" value="0"/>
+        </pargroup>
+        <pargroup name="memory">
+          <control name="storeGrids" value="all"/>
+          <control name="t.nth" value="1"/>
+        </pargroup>
+      </pargroups>
+      <vars name="vars">
+        <assign name="vars">
+          <control name="t.min" value="0"/>
+          <control name="t.max" value="2E4"/>
+          <control name="t.delta" value="1"/>
+          <control name="rho" value="1060"/>
+          <control name="HR" value="62.4"/>
+          <control name="Atact" value="10"/>
+          <control name="Aup" value="100"/>
+          <control name="Aactdur" value="300"/>
+          <control name="Adown" value="160"/>
+          <control name="PRRRrel" value=".05"/>
+          <control name="LVdelay0" value="149"/>
+          <control name="LVup" value="213"/>
+          <control name="LVactdur0" value="527"/>
+          <control name="LVdownpart" value=".5"/>
+          <control name="RVdelay0" value="160"/>
+          <control name="RVup" value="210"/>
+          <control name="RVactdur0" value="566"/>
+          <control name="RVdownpart" value=".5"/>
+          <control name="C_ao" value="1.09"/>
+          <control name="C_vc" value="40"/>
+          <control name="C_pa" value="3.99"/>
+          <control name="C_pve" value="15"/>
+          <control name="V0_ao" value="0"/>
+          <control name="V0_vc" value="0"/>
+          <control name="V0_pa" value="0"/>
+          <control name="V0_pve" value="0"/>
+          <control name="L_ao" value=".01"/>
+          <control name="L_pa" value=".01"/>
+          <control name="L_vc" value=".01"/>
+          <control name="L_pve" value=".01"/>
+          <control name="R_vc" value=".001"/>
+          <control name="R_pve" value=".001"/>
+          <control name="SVR" value="1.18"/>
+          <control name="PVR" value=".077"/>
+          <control name="AVAopen" value="3.5"/>
+          <control name="AVAclosed" value=".001"/>
+          <control name="MVAopen" value="4"/>
+          <control name="MVAclosed" value=".001"/>
+          <control name="PVAopen" value="3.5"/>
+          <control name="PVAclosed" value=".001"/>
+          <control name="TVAopen" value="4"/>
+          <control name="TVAclosed" value=".001"/>
+          <control name="L_lvot" value=".001"/>
+          <control name="L_rvot" value=".001"/>
+          <control name="L_la" value="1E-4"/>
+          <control name="L_ra" value="1E-4"/>
+          <control name="LV_smax" value="101.6"/>
+          <control name="LV_dedtmax" value="-3"/>
+          <control name="LV_k" value="1"/>
+          <control name="LV_a" value="16"/>
+          <control name="LV_visc" value="1.5"/>
+          <control name="RV_smax" value="53.2"/>
+          <control name="RV_dedtmax" value="-3"/>
+          <control name="RV_k" value="1"/>
+          <control name="RV_a" value="16"/>
+          <control name="RV_visc" value="1.5"/>
+          <control name="e0" value="-0.4"/>
+          <control name="LV_Vwall" value="101.5"/>
+          <control name="LV_V0" value="84.4"/>
+          <control name="RV_Vwall" value="46"/>
+          <control name="RV_V0" value="135.6"/>
+          <control name="V0_la" value="20"/>
+          <control name="C_la" value="8"/>
+          <control name="P_maxla" value="6"/>
+          <control name="V0_ra" value="20"/>
+          <control name="C_ra" value="8"/>
+          <control name="P_maxra" value="4"/>
+          <control name="V_aoinit" value="100"/>
+          <control name="V_vcinit" value="71"/>
+          <control name="V_painit" value="70"/>
+          <control name="V_pveinit" value="195"/>
+          <control name="V_rainit" value="50"/>
+          <control name="V_lainit" value="85"/>
+          <control name="Q_tv__init" value="0"/>
+          <control name="Q_pva__init" value="0"/>
+          <control name="Q_pa__init" value="0"/>
+          <control name="Q_vc__init" value="0"/>
+          <control name="Q_pve__init" value="0"/>
+          <control name="Q_mv__init" value="0"/>
+          <control name="Q_av__init" value="0"/>
+          <control name="Q_ao__init" value="0"/>
+        </assign>
+        <solver name="solver">
+          <control name="ode_which" value="Auto"/>
+          <control name="ode_Dopri5_reltol" value="1E-7"/>
+          <control name="ode_Dopri5_abstol" value="1E-7"/>
+          <control name="ode_Dopri5_nstep" value="100000"/>
+          <control name="ode_Dopri5_stiff" value="1000"/>
+          <control name="ode_Dopri5_round" value="2.3E-16"/>
+          <control name="ode_Dopri5_safety" value=".9"/>
+          <control name="ode_Dopri5_loselect" value=".2"/>
+          <control name="ode_Dopri5_hiselect" value="10"/>
+          <control name="ode_Dopri5_beta" value=".04"/>
+          <control name="ode_Euler_nstep" value="2"/>
+          <control name="ode_RK2_nstep" value="2"/>
+          <control name="ode_Fehlberg_minstep" value="1E-4"/>
+          <control name="ode_Fehlberg_maxstep" value=".1"/>
+          <control name="ode_Fehlberg_tol" value="1E-6"/>
+          <control name="ode_KM_minstep" value="1E-4"/>
+          <control name="ode_KM_maxstep" value=".1"/>
+          <control name="ode_KM_tol" value="1E-6"/>
+          <control name="ode_Radau_reltol" value="1E-4"/>
+          <control name="ode_Radau_abstol" value="1E-7"/>
+          <control name="ode_Radau_nstep" value="100000"/>
+          <control name="ode_Radau_round" value="1E-16"/>
+          <control name="ode_Radau_safety" value=".9"/>
+          <control name="ode_Radau_minord" value="3"/>
+          <control name="ode_Radau_maxord" value="7"/>
+          <control name="ode_Radau_initord" value="3"/>
+          <control name="ode_Radau_newton" value="7"/>
+          <control name="ode_Radau_jacob" value=".001"/>
+          <control name="ode_Radau_losize" value="1"/>
+          <control name="ode_Radau_hisize" value="1.2"/>
+          <control name="ode_Radau_loselect" value=".2"/>
+          <control name="ode_Radau_hiselect" value="8"/>
+          <control name="ode_Radau_locontract" value=".002"/>
+          <control name="ode_Radau_hicontract" value=".8"/>
+          <control name="ode_Radau_hiorder" value="1.2"/>
+          <control name="ode_Radau_loorder" value=".8"/>
+          <control name="ode_RK4_nstep" value="2"/>
+          <control name="ode_CVode_reltol" value="1E-7"/>
+          <control name="ode_CVode_abstol" value="1E-8"/>
+          <control name="ode_CVode_maxsteps" value="100000"/>
+          <control name="ode_CVode_stiff" value="false"/>
+          <control name="pde_which" value="LSFEA"/>
+          <control name="pde_MacCormack_FCT" value="false"/>
+          <control name="fzero_unbound" value="ggopt"/>
+          <control name="fzero_bound" value="simplex"/>
+          <control name="fzero_errtol" value="1E-6"/>
+          <control name="fzero_maxcalls" value="500"/>
+          <control name="fzero_maxiters" value="100"/>
+          <control name="fzero_eps" value="1E-6"/>
+          <control name="fzero_istep" value=".01"/>
+          <control name="fzero_npoints" value="5"/>
+          <control name="fzero_randseed" value="0"/>
+          <control name="fzero_inittemp" value="100"/>
+          <control name="fzero_populationsize" value="50"/>
+          <control name="fzero_mutationrate" value=".1"/>
+          <control name="fzero_crossoverrate" value=".5"/>
+          <control name="fzero_mutationstep" value=".05"/>
+          <control name="fzero_elitecutoff" value=".5"/>
+          <control name="fzero_selectmethod" value="1"/>
+          <control name="random_seed" value="0"/>
+        </solver>
+      </vars>
+      <control name="desc" value=""/>
+      <control name="locked" value="false"/>
+      <control name="notes"></control>
+    </parset>
+    <parset name="PAH_patient">
+      <pargroups>
+        <pargroup name="inputs">
+          <control name="t.min" value="0"/>
+          <control name="t.max" value="20000"/>
+          <control name="t.delta" value="1"/>
+          <control name="rho" value="1060"/>
+          <control name="HR" value="67.7"/>
+          <control name="Atact" value="10"/>
+          <control name="Aup" value="100"/>
+          <control name="Aactdur" value="300"/>
+          <control name="Adown" value="160"/>
+          <control name="PRRRrel" value=".05"/>
+          <control name="LVdelay0" value="170"/>
+          <control name="LVup" value="214.3"/>
+          <control name="LVactdur0" value="513.5"/>
+          <control name="LVdownpart" value=".5"/>
+          <control name="RVdelay0" value="185.8"/>
+          <control name="RVup" value="208.1"/>
+          <control name="RVactdur0" value="571.6"/>
+          <control name="RVdownpart" value=".5"/>
+          <control name="C_ao" value="0.924"/>
+          <control name="C_vc" value="40"/>
+          <control name="C_pa" value="0.972"/>
+          <control name="C_pve" value="15"/>
+          <control name="V0_ao" value="0"/>
+          <control name="V0_vc" value="0"/>
+          <control name="V0_pa" value="0"/>
+          <control name="V0_pve" value="0"/>
+          <control name="L_ao" value=".01"/>
+          <control name="L_pa" value=".01"/>
+          <control name="L_vc" value=".01"/>
+          <control name="L_pve" value=".01"/>
+          <control name="R_vc" value=".001"/>
+          <control name="R_pve" value=".001"/>
+          <control name="SVR" value="1.236"/>
+          <control name="PVR" value="0.617"/>
+          <control name="AVAopen" value="3.5"/>
+          <control name="AVAclosed" value=".001"/>
+          <control name="MVAopen" value="4"/>
+          <control name="MVAclosed" value=".001"/>
+          <control name="PVAopen" value="3.5"/>
+          <control name="PVAclosed" value=".001"/>
+          <control name="TVAopen" value="4"/>
+          <control name="TVAclosed" value=".001"/>
+          <control name="L_lvot" value=".001"/>
+          <control name="L_rvot" value=".001"/>
+          <control name="L_la" value="1E-4"/>
+          <control name="L_ra" value="1E-4"/>
+          <control name="LV_smax" value="81.1"/>
+          <control name="LV_dedtmax" value="-3"/>
+          <control name="LV_k" value="1"/>
+          <control name="LV_a" value="16"/>
+          <control name="LV_visc" value="1.5"/>
+          <control name="RV_smax" value="102"/>
+          <control name="RV_dedtmax" value="-3"/>
+          <control name="RV_k" value="1"/>
+          <control name="RV_a" value="16"/>
+          <control name="RV_visc" value="1.5"/>
+          <control name="e0" value="-0.4"/>
+          <control name="LV_Vwall" value="93.7"/>
+          <control name="LV_V0" value="63.2"/>
+          <control name="RV_Vwall" value="67.7"/>
+          <control name="RV_V0" value="120"/>
+          <control name="V0_la" value="20"/>
+          <control name="C_la" value="8"/>
+          <control name="P_maxla" value="6"/>
+          <control name="V0_ra" value="20"/>
+          <control name="C_ra" value="8"/>
+          <control name="P_maxra" value="4"/>
+          <control name="V_aoinit" value="100"/>
+          <control name="V_vcinit" value="223.5"/>
+          <control name="V_painit" value="67.8"/>
+          <control name="V_pveinit" value="267.8"/>
+          <control name="V_rainit" value="62.2"/>
+          <control name="V_lainit" value="112.2"/>
+          <control name="Q_tv__init" value="0"/>
+          <control name="Q_pva__init" value="0"/>
+          <control name="Q_pa__init" value="0"/>
+          <control name="Q_vc__init" value="0"/>
+          <control name="Q_pve__init" value="0"/>
+          <control name="Q_mv__init" value="0"/>
+          <control name="Q_av__init" value="0"/>
+          <control name="Q_ao__init" value="0"/>
+        </pargroup>
+        <pargroup name="solver">
+          <control name="ode_which" value="Auto"/>
+          <control name="ode_Dopri5_reltol" value="1E-7"/>
+          <control name="ode_Dopri5_abstol" value="1E-7"/>
+          <control name="ode_Dopri5_nstep" value="100000"/>
+          <control name="ode_Dopri5_stiff" value="1000"/>
+          <control name="ode_Dopri5_round" value="2.3E-16"/>
+          <control name="ode_Dopri5_safety" value=".9"/>
+          <control name="ode_Dopri5_loselect" value=".2"/>
+          <control name="ode_Dopri5_hiselect" value="10"/>
+          <control name="ode_Dopri5_beta" value=".04"/>
+          <control name="ode_Euler_nstep" value="2"/>
+          <control name="ode_RK2_nstep" value="2"/>
+          <control name="ode_Fehlberg_minstep" value="1E-4"/>
+          <control name="ode_Fehlberg_maxstep" value=".1"/>
+          <control name="ode_Fehlberg_tol" value="1E-6"/>
+          <control name="ode_KM_minstep" value="1E-4"/>
+          <control name="ode_KM_maxstep" value=".1"/>
+          <control name="ode_KM_tol" value="1E-6"/>
+          <control name="ode_Radau_reltol" value="1E-4"/>
+          <control name="ode_Radau_abstol" value="1E-7"/>
+          <control name="ode_Radau_nstep" value="100000"/>
+          <control name="ode_Radau_round" value="1E-16"/>
+          <control name="ode_Radau_safety" value=".9"/>
+          <control name="ode_Radau_minord" value="3"/>
+          <control name="ode_Radau_maxord" value="7"/>
+          <control name="ode_Radau_initord" value="3"/>
+          <control name="ode_Radau_newton" value="7"/>
+          <control name="ode_Radau_jacob" value=".001"/>
+          <control name="ode_Radau_losize" value="1"/>
+          <control name="ode_Radau_hisize" value="1.2"/>
+          <control name="ode_Radau_loselect" value=".2"/>
+          <control name="ode_Radau_hiselect" value="8"/>
+          <control name="ode_Radau_locontract" value=".002"/>
+          <control name="ode_Radau_hicontract" value=".8"/>
+          <control name="ode_Radau_hiorder" value="1.2"/>
+          <control name="ode_Radau_loorder" value=".8"/>
+          <control name="ode_RK4_nstep" value="2"/>
+          <control name="ode_CVode_reltol" value="1E-7"/>
+          <control name="ode_CVode_abstol" value="1E-8"/>
+          <control name="ode_CVode_maxsteps" value="100000"/>
+          <control name="ode_CVode_stiff" value="false"/>
+          <control name="pde_which" value="LSFEA"/>
+          <control name="pde_MacCormack_FCT" value="false"/>
+          <control name="fzero_unbound" value="ggopt"/>
+          <control name="fzero_bound" value="simplex"/>
+          <control name="fzero_errtol" value="1E-6"/>
+          <control name="fzero_maxcalls" value="500"/>
+          <control name="fzero_maxiters" value="100"/>
+          <control name="fzero_eps" value="1E-6"/>
+          <control name="fzero_istep" value=".01"/>
+          <control name="fzero_npoints" value="5"/>
+          <control name="fzero_randseed" value="0"/>
+          <control name="fzero_inittemp" value="100"/>
+          <control name="fzero_populationsize" value="50"/>
+          <control name="fzero_mutationrate" value=".1"/>
+          <control name="fzero_crossoverrate" value=".5"/>
+          <control name="fzero_mutationstep" value=".05"/>
+          <control name="fzero_elitecutoff" value=".5"/>
+          <control name="fzero_selectmethod" value="1"/>
+          <control name="random_seed" value="0"/>
+        </pargroup>
+        <pargroup name="memory">
+          <control name="storeGrids" value="all"/>
+          <control name="t.nth" value="1"/>
+        </pargroup>
+      </pargroups>
+      <vars name="vars">
+        <assign name="vars">
+          <control name="t.min" value="0"/>
+          <control name="t.max" value="20000"/>
+          <control name="t.delta" value="1"/>
+          <control name="rho" value="1060"/>
+          <control name="HR" value="67.7"/>
+          <control name="Atact" value="10"/>
+          <control name="Aup" value="100"/>
+          <control name="Aactdur" value="300"/>
+          <control name="Adown" value="160"/>
+          <control name="PRRRrel" value=".05"/>
+          <control name="LVdelay0" value="170"/>
+          <control name="LVup" value="214.3"/>
+          <control name="LVactdur0" value="513.5"/>
+          <control name="LVdownpart" value=".5"/>
+          <control name="RVdelay0" value="185.8"/>
+          <control name="RVup" value="208.1"/>
+          <control name="RVactdur0" value="571.6"/>
+          <control name="RVdownpart" value=".5"/>
+          <control name="C_ao" value="0.924"/>
+          <control name="C_vc" value="40"/>
+          <control name="C_pa" value="0.972"/>
+          <control name="C_pve" value="15"/>
+          <control name="V0_ao" value="0"/>
+          <control name="V0_vc" value="0"/>
+          <control name="V0_pa" value="0"/>
+          <control name="V0_pve" value="0"/>
+          <control name="L_ao" value=".01"/>
+          <control name="L_pa" value=".01"/>
+          <control name="L_vc" value=".01"/>
+          <control name="L_pve" value=".01"/>
+          <control name="R_vc" value=".001"/>
+          <control name="R_pve" value=".001"/>
+          <control name="SVR" value="1.236"/>
+          <control name="PVR" value="0.617"/>
+          <control name="AVAopen" value="3.5"/>
+          <control name="AVAclosed" value=".001"/>
+          <control name="MVAopen" value="4"/>
+          <control name="MVAclosed" value=".001"/>
+          <control name="PVAopen" value="3.5"/>
+          <control name="PVAclosed" value=".001"/>
+          <control name="TVAopen" value="4"/>
+          <control name="TVAclosed" value=".001"/>
+          <control name="L_lvot" value=".001"/>
+          <control name="L_rvot" value=".001"/>
+          <control name="L_la" value="1E-4"/>
+          <control name="L_ra" value="1E-4"/>
+          <control name="LV_smax" value="81.1"/>
+          <control name="LV_dedtmax" value="-3"/>
+          <control name="LV_k" value="1"/>
+          <control name="LV_a" value="16"/>
+          <control name="LV_visc" value="1.5"/>
+          <control name="RV_smax" value="102"/>
+          <control name="RV_dedtmax" value="-3"/>
+          <control name="RV_k" value="1"/>
+          <control name="RV_a" value="16"/>
+          <control name="RV_visc" value="1.5"/>
+          <control name="e0" value="-0.4"/>
+          <control name="LV_Vwall" value="93.7"/>
+          <control name="LV_V0" value="63.2"/>
+          <control name="RV_Vwall" value="67.7"/>
+          <control name="RV_V0" value="120"/>
+          <control name="V0_la" value="20"/>
+          <control name="C_la" value="8"/>
+          <control name="P_maxla" value="6"/>
+          <control name="V0_ra" value="20"/>
+          <control name="C_ra" value="8"/>
+          <control name="P_maxra" value="4"/>
+          <control name="V_aoinit" value="100"/>
+          <control name="V_vcinit" value="223.5"/>
+          <control name="V_painit" value="67.8"/>
+          <control name="V_pveinit" value="267.8"/>
+          <control name="V_rainit" value="62.2"/>
+          <control name="V_lainit" value="112.2"/>
+          <control name="Q_tv__init" value="0"/>
+          <control name="Q_pva__init" value="0"/>
+          <control name="Q_pa__init" value="0"/>
+          <control name="Q_vc__init" value="0"/>
+          <control name="Q_pve__init" value="0"/>
+          <control name="Q_mv__init" value="0"/>
+          <control name="Q_av__init" value="0"/>
+          <control name="Q_ao__init" value="0"/>
+        </assign>
+        <solver name="solver">
+          <control name="ode_which" value="Auto"/>
+          <control name="ode_Dopri5_reltol" value="1E-7"/>
+          <control name="ode_Dopri5_abstol" value="1E-7"/>
+          <control name="ode_Dopri5_nstep" value="100000"/>
+          <control name="ode_Dopri5_stiff" value="1000"/>
+          <control name="ode_Dopri5_round" value="2.3E-16"/>
+          <control name="ode_Dopri5_safety" value=".9"/>
+          <control name="ode_Dopri5_loselect" value=".2"/>
+          <control name="ode_Dopri5_hiselect" value="10"/>
+          <control name="ode_Dopri5_beta" value=".04"/>
+          <control name="ode_Euler_nstep" value="2"/>
+          <control name="ode_RK2_nstep" value="2"/>
+          <control name="ode_Fehlberg_minstep" value="1E-4"/>
+          <control name="ode_Fehlberg_maxstep" value=".1"/>
+          <control name="ode_Fehlberg_tol" value="1E-6"/>
+          <control name="ode_KM_minstep" value="1E-4"/>
+          <control name="ode_KM_maxstep" value=".1"/>
+          <control name="ode_KM_tol" value="1E-6"/>
+          <control name="ode_Radau_reltol" value="1E-4"/>
+          <control name="ode_Radau_abstol" value="1E-7"/>
+          <control name="ode_Radau_nstep" value="100000"/>
+          <control name="ode_Radau_round" value="1E-16"/>
+          <control name="ode_Radau_safety" value=".9"/>
+          <control name="ode_Radau_minord" value="3"/>
+          <control name="ode_Radau_maxord" value="7"/>
+          <control name="ode_Radau_initord" value="3"/>
+          <control name="ode_Radau_newton" value="7"/>
+          <control name="ode_Radau_jacob" value=".001"/>
+          <control name="ode_Radau_losize" value="1"/>
+          <control name="ode_Radau_hisize" value="1.2"/>
+          <control name="ode_Radau_loselect" value=".2"/>
+          <control name="ode_Radau_hiselect" value="8"/>
+          <control name="ode_Radau_locontract" value=".002"/>
+          <control name="ode_Radau_hicontract" value=".8"/>
+          <control name="ode_Radau_hiorder" value="1.2"/>
+          <control name="ode_Radau_loorder" value=".8"/>
+          <control name="ode_RK4_nstep" value="2"/>
+          <control name="ode_CVode_reltol" value="1E-7"/>
+          <control name="ode_CVode_abstol" value="1E-8"/>
+          <control name="ode_CVode_maxsteps" value="100000"/>
+          <control name="ode_CVode_stiff" value="false"/>
+          <control name="pde_which" value="LSFEA"/>
+          <control name="pde_MacCormack_FCT" value="false"/>
+          <control name="fzero_unbound" value="ggopt"/>
+          <control name="fzero_bound" value="simplex"/>
+          <control name="fzero_errtol" value="1E-6"/>
+          <control name="fzero_maxcalls" value="500"/>
+          <control name="fzero_maxiters" value="100"/>
+          <control name="fzero_eps" value="1E-6"/>
+          <control name="fzero_istep" value=".01"/>
+          <control name="fzero_npoints" value="5"/>
+          <control name="fzero_randseed" value="0"/>
+          <control name="fzero_inittemp" value="100"/>
+          <control name="fzero_populationsize" value="50"/>
+          <control name="fzero_mutationrate" value=".1"/>
+          <control name="fzero_crossoverrate" value=".5"/>
+          <control name="fzero_mutationstep" value=".05"/>
+          <control name="fzero_elitecutoff" value=".5"/>
+          <control name="fzero_selectmethod" value="1"/>
+          <control name="random_seed" value="0"/>
+        </solver>
+      </vars>
+      <control name="desc" value=""/>
+      <control name="locked" value="false"/>
+      <control name="notes"></control>
+    </parset>
+    <parset name="PAH_patient_exercise">
+      <pargroups>
+        <pargroup name="inputs">
+          <control name="t.min" value="0"/>
+          <control name="t.max" value="20000"/>
+          <control name="t.delta" value="1"/>
+          <control name="rho" value="1060"/>
+          <control name="HR" value="107.3"/>
+          <control name="Atact" value="10"/>
+          <control name="Aup" value="100"/>
+          <control name="Aactdur" value="300"/>
+          <control name="Adown" value="160"/>
+          <control name="PRRRrel" value=".05"/>
+          <control name="LVdelay0" value="200.89"/>
+          <control name="LVup" value="134.5"/>
+          <control name="LVactdur0" value="499.94"/>
+          <control name="LVdownpart" value=".5"/>
+          <control name="RVdelay0" value="208"/>
+          <control name="RVup" value="103.63"/>
+          <control name="RVactdur0" value="568.74"/>
+          <control name="RVdownpart" value=".5"/>
+          <control name="C_ao" value=".9269"/>
+          <control name="C_vc" value="20"/>
+          <control name="C_pa" value=".9541"/>
+          <control name="C_pve" value="15"/>
+          <control name="V0_ao" value="0"/>
+          <control name="V0_vc" value="0"/>
+          <control name="V0_pa" value="0"/>
+          <control name="V0_pve" value="0"/>
+          <control name="L_ao" value=".01"/>
+          <control name="L_pa" value=".01"/>
+          <control name="L_vc" value=".01"/>
+          <control name="L_pve" value=".01"/>
+          <control name="R_vc" value=".001"/>
+          <control name="R_pve" value=".001"/>
+          <control name="SVR" value="0.959357"/>
+          <control name="PVR" value="0.6516"/>
+          <control name="AVAopen" value="3.5"/>
+          <control name="AVAclosed" value=".001"/>
+          <control name="MVAopen" value="4"/>
+          <control name="MVAclosed" value=".001"/>
+          <control name="PVAopen" value="3.5"/>
+          <control name="PVAclosed" value=".001"/>
+          <control name="TVAopen" value="4"/>
+          <control name="TVAclosed" value=".001"/>
+          <control name="L_lvot" value=".001"/>
+          <control name="L_rvot" value=".001"/>
+          <control name="L_la" value="1E-4"/>
+          <control name="L_ra" value="1E-4"/>
+          <control name="LV_smax" value="105.38"/>
+          <control name="LV_dedtmax" value="-4.5"/>
+          <control name="LV_k" value="1"/>
+          <control name="LV_a" value="16"/>
+          <control name="LV_visc" value="1.5"/>
+          <control name="RV_smax" value="155.94"/>
+          <control name="RV_dedtmax" value="-4.5"/>
+          <control name="RV_k" value="1"/>
+          <control name="RV_a" value="16"/>
+          <control name="RV_visc" value="1.5"/>
+          <control name="e0" value="-0.4"/>
+          <control name="LV_Vwall" value="99.47"/>
+          <control name="LV_V0" value="63.79"/>
+          <control name="RV_Vwall" value="72.97"/>
+          <control name="RV_V0" value="129.77"/>
+          <control name="V0_la" value="20"/>
+          <control name="C_la" value="8"/>
+          <control name="P_maxla" value="9"/>
+          <control name="V0_ra" value="20"/>
+          <control name="C_ra" value="8"/>
+          <control name="P_maxra" value="6"/>
+          <control name="V_aoinit" value="104.29"/>
+          <control name="V_vcinit" value="468.5"/>
+          <control name="V_painit" value="74.29"/>
+          <control name="V_pveinit" value="178.57"/>
+          <control name="V_rainit" value="111.43"/>
+          <control name="V_lainit" value="97.14"/>
+          <control name="Q_tv__init" value="0"/>
+          <control name="Q_pva__init" value="0"/>
+          <control name="Q_pa__init" value="0"/>
+          <control name="Q_vc__init" value="0"/>
+          <control name="Q_pve__init" value="0"/>
+          <control name="Q_mv__init" value="0"/>
+          <control name="Q_av__init" value="0"/>
+          <control name="Q_ao__init" value="0"/>
+        </pargroup>
+        <pargroup name="solver">
+          <control name="ode_which" value="Auto"/>
+          <control name="ode_Dopri5_reltol" value="1E-7"/>
+          <control name="ode_Dopri5_abstol" value="1E-7"/>
+          <control name="ode_Dopri5_nstep" value="100000"/>
+          <control name="ode_Dopri5_stiff" value="1000"/>
+          <control name="ode_Dopri5_round" value="2.3E-16"/>
+          <control name="ode_Dopri5_safety" value=".9"/>
+          <control name="ode_Dopri5_loselect" value=".2"/>
+          <control name="ode_Dopri5_hiselect" value="10"/>
+          <control name="ode_Dopri5_beta" value=".04"/>
+          <control name="ode_Euler_nstep" value="2"/>
+          <control name="ode_RK2_nstep" value="2"/>
+          <control name="ode_Fehlberg_minstep" value="1E-4"/>
+          <control name="ode_Fehlberg_maxstep" value=".1"/>
+          <control name="ode_Fehlberg_tol" value="1E-6"/>
+          <control name="ode_KM_minstep" value="1E-4"/>
+          <control name="ode_KM_maxstep" value=".1"/>
+          <control name="ode_KM_tol" value="1E-6"/>
+          <control name="ode_Radau_reltol" value="1E-4"/>
+          <control name="ode_Radau_abstol" value="1E-7"/>
+          <control name="ode_Radau_nstep" value="100000"/>
+          <control name="ode_Radau_round" value="1E-16"/>
+          <control name="ode_Radau_safety" value=".9"/>
+          <control name="ode_Radau_minord" value="3"/>
+          <control name="ode_Radau_maxord" value="7"/>
+          <control name="ode_Radau_initord" value="3"/>
+          <control name="ode_Radau_newton" value="7"/>
+          <control name="ode_Radau_jacob" value=".001"/>
+          <control name="ode_Radau_losize" value="1"/>
+          <control name="ode_Radau_hisize" value="1.2"/>
+          <control name="ode_Radau_loselect" value=".2"/>
+          <control name="ode_Radau_hiselect" value="8"/>
+          <control name="ode_Radau_locontract" value=".002"/>
+          <control name="ode_Radau_hicontract" value=".8"/>
+          <control name="ode_Radau_hiorder" value="1.2"/>
+          <control name="ode_Radau_loorder" value=".8"/>
+          <control name="ode_RK4_nstep" value="2"/>
+          <control name="ode_CVode_reltol" value="1E-7"/>
+          <control name="ode_CVode_abstol" value="1E-8"/>
+          <control name="ode_CVode_maxsteps" value="100000"/>
+          <control name="ode_CVode_stiff" value="false"/>
+          <control name="pde_which" value="LSFEA"/>
+          <control name="pde_MacCormack_FCT" value="false"/>
+          <control name="fzero_unbound" value="ggopt"/>
+          <control name="fzero_bound" value="simplex"/>
+          <control name="fzero_errtol" value="1E-6"/>
+          <control name="fzero_maxcalls" value="500"/>
+          <control name="fzero_maxiters" value="100"/>
+          <control name="fzero_eps" value="1E-6"/>
+          <control name="fzero_istep" value=".01"/>
+          <control name="fzero_npoints" value="5"/>
+          <control name="fzero_randseed" value="0"/>
+          <control name="fzero_inittemp" value="100"/>
+          <control name="fzero_populationsize" value="50"/>
+          <control name="fzero_mutationrate" value=".1"/>
+          <control name="fzero_crossoverrate" value=".5"/>
+          <control name="fzero_mutationstep" value=".05"/>
+          <control name="fzero_elitecutoff" value=".5"/>
+          <control name="fzero_selectmethod" value="1"/>
+          <control name="random_seed" value="0"/>
+        </pargroup>
+        <pargroup name="memory">
+          <control name="storeGrids" value="all"/>
+          <control name="t.nth" value="1"/>
+        </pargroup>
+      </pargroups>
+      <vars name="vars">
+        <assign name="vars">
+          <control name="t.min" value="0"/>
+          <control name="t.max" value="20000"/>
+          <control name="t.delta" value="1"/>
+          <control name="rho" value="1060"/>
+          <control name="HR" value="107.3"/>
+          <control name="Atact" value="10"/>
+          <control name="Aup" value="100"/>
+          <control name="Aactdur" value="300"/>
+          <control name="Adown" value="160"/>
+          <control name="PRRRrel" value=".05"/>
+          <control name="LVdelay0" value="200.89"/>
+          <control name="LVup" value="134.5"/>
+          <control name="LVactdur0" value="499.94"/>
+          <control name="LVdownpart" value=".5"/>
+          <control name="RVdelay0" value="208"/>
+          <control name="RVup" value="103.63"/>
+          <control name="RVactdur0" value="568.74"/>
+          <control name="RVdownpart" value=".5"/>
+          <control name="C_ao" value=".9269"/>
+          <control name="C_vc" value="20"/>
+          <control name="C_pa" value=".9541"/>
+          <control name="C_pve" value="15"/>
+          <control name="V0_ao" value="0"/>
+          <control name="V0_vc" value="0"/>
+          <control name="V0_pa" value="0"/>
+          <control name="V0_pve" value="0"/>
+          <control name="L_ao" value=".01"/>
+          <control name="L_pa" value=".01"/>
+          <control name="L_vc" value=".01"/>
+          <control name="L_pve" value=".01"/>
+          <control name="R_vc" value=".001"/>
+          <control name="R_pve" value=".001"/>
+          <control name="SVR" value="0.959357"/>
+          <control name="PVR" value="0.6516"/>
+          <control name="AVAopen" value="3.5"/>
+          <control name="AVAclosed" value=".001"/>
+          <control name="MVAopen" value="4"/>
+          <control name="MVAclosed" value=".001"/>
+          <control name="PVAopen" value="3.5"/>
+          <control name="PVAclosed" value=".001"/>
+          <control name="TVAopen" value="4"/>
+          <control name="TVAclosed" value=".001"/>
+          <control name="L_lvot" value=".001"/>
+          <control name="L_rvot" value=".001"/>
+          <control name="L_la" value="1E-4"/>
+          <control name="L_ra" value="1E-4"/>
+          <control name="LV_smax" value="105.38"/>
+          <control name="LV_dedtmax" value="-4.5"/>
+          <control name="LV_k" value="1"/>
+          <control name="LV_a" value="16"/>
+          <control name="LV_visc" value="1.5"/>
+          <control name="RV_smax" value="155.94"/>
+          <control name="RV_dedtmax" value="-4.5"/>
+          <control name="RV_k" value="1"/>
+          <control name="RV_a" value="16"/>
+          <control name="RV_visc" value="1.5"/>
+          <control name="e0" value="-0.4"/>
+          <control name="LV_Vwall" value="99.47"/>
+          <control name="LV_V0" value="63.79"/>
+          <control name="RV_Vwall" value="72.97"/>
+          <control name="RV_V0" value="129.77"/>
+          <control name="V0_la" value="20"/>
+          <control name="C_la" value="8"/>
+          <control name="P_maxla" value="9"/>
+          <control name="V0_ra" value="20"/>
+          <control name="C_ra" value="8"/>
+          <control name="P_maxra" value="6"/>
+          <control name="V_aoinit" value="104.29"/>
+          <control name="V_vcinit" value="468.5"/>
+          <control name="V_painit" value="74.29"/>
+          <control name="V_pveinit" value="178.57"/>
+          <control name="V_rainit" value="111.43"/>
+          <control name="V_lainit" value="97.14"/>
+          <control name="Q_tv__init" value="0"/>
+          <control name="Q_pva__init" value="0"/>
+          <control name="Q_pa__init" value="0"/>
+          <control name="Q_vc__init" value="0"/>
+          <control name="Q_pve__init" value="0"/>
+          <control name="Q_mv__init" value="0"/>
+          <control name="Q_av__init" value="0"/>
+          <control name="Q_ao__init" value="0"/>
+        </assign>
+        <solver name="solver">
+          <control name="ode_which" value="Auto"/>
+          <control name="ode_Dopri5_reltol" value="1E-7"/>
+          <control name="ode_Dopri5_abstol" value="1E-7"/>
+          <control name="ode_Dopri5_nstep" value="100000"/>
+          <control name="ode_Dopri5_stiff" value="1000"/>
+          <control name="ode_Dopri5_round" value="2.3E-16"/>
+          <control name="ode_Dopri5_safety" value=".9"/>
+          <control name="ode_Dopri5_loselect" value=".2"/>
+          <control name="ode_Dopri5_hiselect" value="10"/>
+          <control name="ode_Dopri5_beta" value=".04"/>
+          <control name="ode_Euler_nstep" value="2"/>
+          <control name="ode_RK2_nstep" value="2"/>
+          <control name="ode_Fehlberg_minstep" value="1E-4"/>
+          <control name="ode_Fehlberg_maxstep" value=".1"/>
+          <control name="ode_Fehlberg_tol" value="1E-6"/>
+          <control name="ode_KM_minstep" value="1E-4"/>
+          <control name="ode_KM_maxstep" value=".1"/>
+          <control name="ode_KM_tol" value="1E-6"/>
+          <control name="ode_Radau_reltol" value="1E-4"/>
+          <control name="ode_Radau_abstol" value="1E-7"/>
+          <control name="ode_Radau_nstep" value="100000"/>
+          <control name="ode_Radau_round" value="1E-16"/>
+          <control name="ode_Radau_safety" value=".9"/>
+          <control name="ode_Radau_minord" value="3"/>
+          <control name="ode_Radau_maxord" value="7"/>
+          <control name="ode_Radau_initord" value="3"/>
+          <control name="ode_Radau_newton" value="7"/>
+          <control name="ode_Radau_jacob" value=".001"/>
+          <control name="ode_Radau_losize" value="1"/>
+          <control name="ode_Radau_hisize" value="1.2"/>
+          <control name="ode_Radau_loselect" value=".2"/>
+          <control name="ode_Radau_hiselect" value="8"/>
+          <control name="ode_Radau_locontract" value=".002"/>
+          <control name="ode_Radau_hicontract" value=".8"/>
+          <control name="ode_Radau_hiorder" value="1.2"/>
+          <control name="ode_Radau_loorder" value=".8"/>
+          <control name="ode_RK4_nstep" value="2"/>
+          <control name="ode_CVode_reltol" value="1E-7"/>
+          <control name="ode_CVode_abstol" value="1E-8"/>
+          <control name="ode_CVode_maxsteps" value="100000"/>
+          <control name="ode_CVode_stiff" value="false"/>
+          <control name="pde_which" value="LSFEA"/>
+          <control name="pde_MacCormack_FCT" value="false"/>
+          <control name="fzero_unbound" value="ggopt"/>
+          <control name="fzero_bound" value="simplex"/>
+          <control name="fzero_errtol" value="1E-6"/>
+          <control name="fzero_maxcalls" value="500"/>
+          <control name="fzero_maxiters" value="100"/>
+          <control name="fzero_eps" value="1E-6"/>
+          <control name="fzero_istep" value=".01"/>
+          <control name="fzero_npoints" value="5"/>
+          <control name="fzero_randseed" value="0"/>
+          <control name="fzero_inittemp" value="100"/>
+          <control name="fzero_populationsize" value="50"/>
+          <control name="fzero_mutationrate" value=".1"/>
+          <control name="fzero_crossoverrate" value=".5"/>
+          <control name="fzero_mutationstep" value=".05"/>
+          <control name="fzero_elitecutoff" value=".5"/>
+          <control name="fzero_selectmethod" value="1"/>
+          <control name="random_seed" value="0"/>
+        </solver>
+      </vars>
+      <control name="desc" value=""/>
+      <control name="locked" value="false"/>
+      <control name="notes"></control>
+    </parset>
+  </project>
+</JSim>
