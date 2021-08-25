@@ -42,7 +42,7 @@
 	LVactdur0 	= 564 ms,					// Duration of LV activation at HR 60
 	LVdownpart      = 0.5 dimensionless,          			// Duration of downstroke of LV activation as fraction of total duration
 	LVactdur	= LVactdur0*(((60 1/min)/HR)^(1/3)),        	// Duration of LV activation, HR dependent
-									// Ref: Fridericia LS (1920). &quot;The duration of systole in the electrocardiogram of normal subjects and of patients with heart disease&quot;. Acta Medica Scandinavica (53): 469–486.
+									// Ref: Fridericia LS (1920). &quot;The duration of systole in the electrocardiogram of normal subjects and of patients with heart disease&quot;. Acta Medica Scandinavica (53): 469â€“486.
 	LVdown    	= LVactdur*LVdownpart,				// Duration of downstroke of LV activation
 
 	RVdelay0	= 186 ms,					// Delay btw. atria and RV at HR 60
@@ -112,7 +112,7 @@
 	LV_a			= 11 dimensionless,
 //   Viscosity
 	LV_visc			= 1.5 kPa*s,	// Viscosity (stress per strain rate)
-						// Ref. Chung et al, J Mol Cell Cardiol. 2011 Sep; 51(3): 428–434.
+						// Ref. Chung et al, J Mol Cell Cardiol. 2011 Sep; 51(3): 428â€“434.
 						// They find titin-based viscosity approx 5.8 kPa at stretch rate of 1 s-1 (fig. 2)
 						// in mice. A lower value gives more realistic results in this model.
 
@@ -674,9 +674,12 @@ real
 
 /*
 
-Original author : Niels Thue Olsen, June 2021.
+Original author : Niels Thue Olsen, August 2021.
 
-Publication: Submitted to AJP – Heart and Circulatory Physiology
+Publication: Olsen NT, GÃ¶ransson G, Vejlstrup N, Carlsen J. 
+	      Myocardial adaptation and exercise performance in patients with pulmonary arterial hypertension 
+	      assessed with patient-specific computer simulations.
+	      Am J Physiol-Heart Circ Physiol. Forthcoming 2021.
 
 Developed for the JSim software platform:
   Copyright (C) 1999-2009 University of Washington. From the National Simulation Resource,  
